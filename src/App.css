@@ -1,0 +1,12 @@
+.iconHover{
+    transition: all 0.4s;
+}
+.iconHover:hover{
+    background: rgb(201, 197, 197) !important;
+    cursor: pointer;
+}
+@font-face {
+    font-family: A;
+    src: url("/public/fonts/IBMPlexSansArabic-SemiBold.ttf");
+    font-weight: 400;
+}
