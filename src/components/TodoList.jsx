@@ -5,11 +5,9 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Todo from "./Todo";
-import { v4 as iddd } from "uuid";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -17,71 +15,90 @@ import { useState } from "react";
 import { useContext } from "react";
 import { context } from "./context";
 import { useEffect } from "react";
+import { useMemo } from "react";
+import { DeleteDialoge } from "./deleteDialoge";
+import { MessageContext } from "./MessageContext";
 
 export default function TodoList() {
-  const { click, setclick } = useContext(context);
+  const { todos, dispatch } = useContext(context);
   const [input, setinput] = useState("");
   const [classes, setclasses] = useState("all");
+  const [open, setOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const { showHideMessage } = useContext(MessageContext);
 
-  const completedTasks = click.filter((t) => {
-    return t.iscompleted;
-  });
+  function handledeleteclick(id) {
+    setDeleteId(id);
+    setOpen(true);
+  }
 
-  const uncompletedTasks = click.filter((t) => {
-    return !t.iscompleted;
-  });
+  function handleClose() {
+    setOpen(false);
+  }
 
-  let clicktoberender = click;
+  const completedTasks = useMemo(() => {
+    return todos.filter((t) => {
+      return t.iscompleted;
+    });
+  }, [todos]);
+
+  const uncompletedTasks = useMemo(() => {
+    return todos.filter((t) => {
+      return !t.iscompleted;
+    });
+  }, [todos]);
+
+  let clicktoberender = todos;
 
   if (classes == "complete") {
     clicktoberender = completedTasks;
   } else if (classes == "noncomplete") {
     clicktoberender = uncompletedTasks;
   } else {
-    clicktoberender = click;
+    clicktoberender = todos;
   }
 
   const taskList = clicktoberender.map((t) => {
-    return <Todo key={t.id} tasks={t} />;
+    return (
+      <Todo
+        key={t.id}
+        tasks={t}
+        handledeleteclick={handledeleteclick}
+      />
+    );
   });
 
-  function a11yProps(index, value) {
-    return {
-      id: `simple-tab-${index}`,
-      "aria-controls": `simple-tabpanel-${index}`,
-    };
-  }
-  const [value, setValue] = useState(0);
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
   function handleclick() {
-    const newList = {
-      id: iddd(),
-      title: input,
-      iscompleted: false,
-    };
-    const setstr = [...click, newList];
-    setclick(setstr);
-    localStorage.setItem("strlist", JSON.stringify(setstr));
+    dispatch({ type: "add", payload: { newTitle: input } });
     setinput("");
+    showHideMessage("Added");
   }
 
   useEffect(() => {
     const getster = JSON.parse(localStorage.getItem("strlist"));
-    setclick(getster);
+
+    if (getster) {
+      dispatch({
+        type: "load",
+        payload: {
+          todos: getster,
+        },
+      });
+    }
   }, []);
 
-  function changeclasses(e,newValue) {
+  function changeclasses(e, newValue) {
     setclasses(newValue);
   }
 
-
-
-  
   return (
     <React.Fragment>
       <CssBaseline />
+      <DeleteDialoge
+        open={open}
+        handleClose={handleClose}
+        deleteId={deleteId}
+      />
       <Container maxWidth="md">
         <CardContent>
           <Card variant="outlined" sx={{ minHeight: 300 }}>
@@ -104,29 +121,60 @@ export default function TodoList() {
             </Tabs>
             {taskList}
             <Divider />
-            <Grid container sx={{ marginBottom: 2, marginLeft: 2 }}>
-              <Grid size={4} sx={{ marginTop: 11.5 }}>
-                <Button
-                  variant="outlined"
-                  sx={{ width: 200 }}
-                  onClick={(e) => {
-                    handleclick();
-                  }}
-                >
-                  Add
-                </Button>
-              </Grid>
-              <Grid size={8} sx={{ marginTop: 10 }}>
+            <Grid
+              container
+              sx={{
+                width: "100%",
+                marginBottom: 2,
+                marginTop: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {/* Input */}
+              <Grid
+                size={{ xs: 12, sm: 8 }}
+                sx={{
+                  width: { xs: "80%", sm: "100%" },
+                  display: "flex",
+                  justifyContent: "center",
+                  margin: 2,
+                }}
+              >
                 <TextField
                   id="standard-basic"
                   label="add task"
                   variant="standard"
-                  sx={{ width: 500 }}
+                  sx={{ width: "100%" }}
                   value={input}
                   onChange={(event) => {
                     setinput(event.target.value);
                   }}
                 />
+              </Grid>
+
+              {/* Button */}
+              <Grid
+                size={{ xs: 12, sm: 4 }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  width: { xs: "80%", sm: "100%" },
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  sx={{
+                    width: { xs: "100%", sm: 200 },
+                  }}
+                  onClick={() => {
+                    handleclick();
+                  }}
+                >
+                  Add
+                </Button>
               </Grid>
             </Grid>
           </Card>

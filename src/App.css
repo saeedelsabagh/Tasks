@@ -1,12 +1,21 @@
-.iconHover{
-    transition: all 0.4s;
+.iconHover {
+  transition: all 0.2s;
 }
-.iconHover:hover{
-    background: rgb(201, 197, 197) !important;
-    cursor: pointer;
+
+.iconHover:hover {
+
+  cursor: pointer;
 }
+
 @font-face {
-    font-family: A;
-    src: url("/public/fonts/IBMPlexSansArabic-SemiBold.ttf");
-    font-weight: 400;
+  font-family: A;
+  src: url("/fonts/IBMPlexSansArabic-SemiBold.ttf");
+  font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
 }
